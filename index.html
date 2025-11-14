@@ -1,0 +1,1399 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>نظام إدارة المبيتات الجامعية - جهة صفاقس</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700&display=swap');
+        body { font-family: 'Tajawal', sans-serif; }
+        .sidebar-transition { transition: all 0.3s ease; }
+        .card-hover { transition: transform 0.2s, box-shadow 0.2s; }
+        .card-hover:hover { transform: translateY(-2px); box-shadow: 0 10px 20px rgba(0,0,0,0.1); }
+        .fade-in { animation: fadeIn 0.5s ease-in; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .pulse-animation { animation: pulse 2s infinite; }
+        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+        .slide-in { animation: slideIn 0.3s ease-out; }
+        @keyframes slideIn { from { transform: translateX(100%); } to { transform: translateX(0); } }
+        .loading-spinner { border: 3px solid #f3f3f3; border-top: 3px solid #3b82f6; border-radius: 50%; width: 20px; height: 20px; animation: spin 1s linear infinite; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        .gradient-bg { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
+        .glass-effect { background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px); }
+        .notification-badge { position: absolute; top: -5px; right: -5px; background: #ef4444; color: white; border-radius: 50%; width: 18px; height: 18px; display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: bold; }
+        .scrollbar-thin::-webkit-scrollbar { width: 6px; }
+        .scrollbar-thin::-webkit-scrollbar-track { background: #f1f1f1; }
+        .scrollbar-thin::-webkit-scrollbar-thumb { background: #888; border-radius: 3px; }
+        .scrollbar-thin::-webkit-scrollbar-thumb:hover { background: #555; }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <!-- Header -->
+    <header class="bg-gradient-to-r from-blue-600 to-blue-800 text-white shadow-lg">
+        <div class="container mx-auto px-4 py-4">
+            <div class="flex justify-between items-center">
+                <div class="flex items-center space-x-reverse space-x-4">
+                    <i class="fas fa-building-columns text-3xl"></i>
+                    <div>
+                        <h1 class="text-2xl font-bold">نظام إدارة المبيتات الجامعية</h1>
+                        <p class="text-sm text-blue-100">جهة صفاقس - تونس</p>
+                    </div>
+                </div>
+                <div class="flex items-center space-x-reverse space-x-4">
+                    <div class="text-left">
+                        <p class="text-sm text-blue-100">مرحباً بك</p>
+                        <p class="font-semibold">المدير العام</p>
+                    </div>
+                    <div class="w-10 h-10 bg-white rounded-full flex items-center justify-center">
+                        <i class="fas fa-user text-blue-600"></i>
+                    </div>
+                    <button onclick="logout()" class="bg-red-500 hover:bg-red-600 px-4 py-2 rounded-lg transition">
+                        <i class="fas fa-sign-out-alt ml-2"></i>خروج
+                    </button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <div class="flex">
+        <!-- Sidebar -->
+        <aside id="sidebar" class="w-64 bg-white shadow-lg min-h-screen sidebar-transition">
+            <nav class="p-4">
+                <ul class="space-y-2">
+                    <li>
+                        <button onclick="showSection('dashboard')" class="w-full text-right px-4 py-3 rounded-lg hover:bg-blue-50 transition flex items-center justify-between group nav-item active">
+                            <span><i class="fas fa-tachometer-alt ml-3 text-blue-600"></i>لوحة التحكم</span>
+                            <i class="fas fa-chevron-left text-gray-400 group-hover:text-blue-600"></i>
+                        </button>
+                    </li>
+                    <li>
+                        <button onclick="showSection('students')" class="w-full text-right px-4 py-3 rounded-lg hover:bg-blue-50 transition flex items-center justify-between group nav-item">
+                            <span><i class="fas fa-users ml-3 text-green-600"></i>إدارة الطلاب</span>
+                            <i class="fas fa-chevron-left text-gray-400 group-hover:text-green-600"></i>
+                        </button>
+                    </li>
+                    <li>
+                        <button onclick="showSection('rooms')" class="w-full text-right px-4 py-3 rounded-lg hover:bg-blue-50 transition flex items-center justify-between group nav-item">
+                            <span><i class="fas fa-bed ml-3 text-purple-600"></i>إدارة الغرف</span>
+                            <i class="fas fa-chevron-left text-gray-400 group-hover:text-purple-600"></i>
+                        </button>
+                    </li>
+                    <li>
+                        <button onclick="showSection('reservations')" class="w-full text-right px-4 py-3 rounded-lg hover:bg-blue-50 transition flex items-center justify-between group nav-item">
+                            <span><i class="fas fa-calendar-check ml-3 text-orange-600"></i>الحجوزات</span>
+                            <i class="fas fa-chevron-left text-gray-400 group-hover:text-orange-600"></i>
+                        </button>
+                    </li>
+                    <li>
+                        <button onclick="showSection('payments')" class="w-full text-right px-4 py-3 rounded-lg hover:bg-blue-50 transition flex items-center justify-between group nav-item">
+                            <span><i class="fas fa-money-bill-wave ml-3 text-teal-600"></i>المدفوعات</span>
+                            <i class="fas fa-chevron-left text-gray-400 group-hover:text-teal-600"></i>
+                        </button>
+                    </li>
+                    <li>
+                        <button onclick="showSection('reports')" class="w-full text-right px-4 py-3 rounded-lg hover:bg-blue-50 transition flex items-center justify-between group nav-item">
+                            <span><i class="fas fa-chart-bar ml-3 text-indigo-600"></i>التقارير</span>
+                            <i class="fas fa-chevron-left text-gray-400 group-hover:text-indigo-600"></i>
+                        </button>
+                    </li>
+                    <li>
+                        <button onclick="showSection('settings')" class="w-full text-right px-4 py-3 rounded-lg hover:bg-blue-50 transition flex items-center justify-between group nav-item">
+                            <span><i class="fas fa-cog ml-3 text-gray-600"></i>الإعدادات</span>
+                            <i class="fas fa-chevron-left text-gray-400 group-hover:text-gray-600"></i>
+                        </button>
+                    </li>
+                </ul>
+            </nav>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="flex-1 p-6">
+            <!-- Dashboard Section -->
+            <section id="dashboard" class="content-section fade-in">
+                <h2 class="text-3xl font-bold mb-6 text-gray-800">لوحة التحكم</h2>
+                
+                <!-- Stats Cards -->
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+                    <div class="bg-white rounded-xl shadow-md p-6 card-hover">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-gray-500 text-sm">إجمالي الطلاب</p>
+                                <p class="text-3xl font-bold text-blue-600">1,245</p>
+                                <p class="text-sm text-green-500 mt-2">
+                                    <i class="fas fa-arrow-up"></i> +12% هذا الشهر
+                                </p>
+                            </div>
+                            <div class="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center">
+                                <i class="fas fa-users text-blue-600 text-2xl"></i>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-white rounded-xl shadow-md p-6 card-hover">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-gray-500 text-sm">الغرف المتاحة</p>
+                                <p class="text-3xl font-bold text-green-600">89</p>
+                                <p class="text-sm text-gray-500 mt-2">من 320 غرفة</p>
+                            </div>
+                            <div class="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center">
+                                <i class="fas fa-bed text-green-600 text-2xl"></i>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-white rounded-xl shadow-md p-6 card-hover">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-gray-500 text-sm">الإيرادات الشهرية</p>
+                                <p class="text-3xl font-bold text-purple-600">458,320</p>
+                                <p class="text-sm text-green-500 mt-2">
+                                    <i class="fas fa-arrow-up"></i> +8% هذا الشهر
+                                </p>
+                            </div>
+                            <div class="w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center">
+                                <i class="fas fa-dinar-sign text-purple-600 text-2xl"></i>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-white rounded-xl shadow-md p-6 card-hover">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-gray-500 text-sm">معدل الإشغال</p>
+                                <p class="text-3xl font-bold text-orange-600">72%</p>
+                                <p class="text-sm text-orange-500 mt-2">231 غرفة مشغولة</p>
+                            </div>
+                            <div class="w-16 h-16 bg-orange-100 rounded-full flex items-center justify-center">
+                                <i class="fas fa-chart-pie text-orange-600 text-2xl"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Recent Activities -->
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <div class="bg-white rounded-xl shadow-md p-6">
+                        <h3 class="text-xl font-bold mb-4 text-gray-800">الأنشطة الحديثة</h3>
+                        <div class="space-y-3">
+                            <div class="flex items-center p-3 hover:bg-gray-50 rounded-lg transition">
+                                <div class="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center ml-3">
+                                    <i class="fas fa-user-plus text-blue-600"></i>
+                                </div>
+                                <div class="flex-1">
+                                    <p class="font-semibold">طالب جديد: محمد بن علي</p>
+                                    <p class="text-sm text-gray-500">غرفة 205 - مبنى أ</p>
+                                </div>
+                                <span class="text-xs text-gray-400">منذ 5 دقائق</span>
+                            </div>
+                            <div class="flex items-center p-3 hover:bg-gray-50 rounded-lg transition">
+                                <div class="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center ml-3">
+                                    <i class="fas fa-check-circle text-green-600"></i>
+                                </div>
+                                <div class="flex-1">
+                                    <p class="font-semibold">دفع مستحق: سارة التريكي</p>
+                                    <p class="text-sm text-gray-500">250 دينار تونسي</p>
+                                </div>
+                                <span class="text-xs text-gray-400">منذ 15 دقيقة</span>
+                            </div>
+                            <div class="flex items-center p-3 hover:bg-gray-50 rounded-lg transition">
+                                <div class="w-10 h-10 bg-orange-100 rounded-full flex items-center justify-center ml-3">
+                                    <i class="fas fa-exchange-alt text-orange-600"></i>
+                                </div>
+                                <div class="flex-1">
+                                    <p class="font-semibold">تغيير غرفة: أحمد صالح</p>
+                                    <p class="text-sm text-gray-500">من 101 إلى 305</p>
+                                </div>
+                                <span class="text-xs text-gray-400">منذ ساعة</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-white rounded-xl shadow-md p-6">
+                        <h3 class="text-xl font-bold mb-4 text-gray-800">المبيتات</h3>
+                        <div class="space-y-3">
+                            <div class="border rounded-lg p-4 hover:shadow-md transition">
+                                <div class="flex justify-between items-center">
+                                    <div>
+                                        <h4 class="font-semibold">مبنى أ - الذكور</h4>
+                                        <p class="text-sm text-gray-500">150 غرفة • 320 طالب</p>
+                                    </div>
+                                    <div class="text-left">
+                                        <span class="text-2xl font-bold text-green-600">85%</span>
+                                        <p class="text-xs text-gray-500">إشغال</p>
+                                    </div>
+                                </div>
+                                <div class="mt-3 bg-gray-200 rounded-full h-2">
+                                    <div class="bg-green-600 h-2 rounded-full" style="width: 85%"></div>
+                                </div>
+                            </div>
+                            <div class="border rounded-lg p-4 hover:shadow-md transition">
+                                <div class="flex justify-between items-center">
+                                    <div>
+                                        <h4 class="font-semibold">مبنى ب - الإناث</h4>
+                                        <p class="text-sm text-gray-500">170 غرفة • 280 طالبة</p>
+                                    </div>
+                                    <div class="text-left">
+                                        <span class="text-2xl font-bold text-blue-600">65%</span>
+                                        <p class="text-xs text-gray-500">إشغال</p>
+                                    </div>
+                                </div>
+                                <div class="mt-3 bg-gray-200 rounded-full h-2">
+                                    <div class="bg-blue-600 h-2 rounded-full" style="width: 65%"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Students Section -->
+            <section id="students" class="content-section hidden">
+                <div class="flex justify-between items-center mb-6">
+                    <h2 class="text-3xl font-bold text-gray-800">إدارة الطلاب</h2>
+                    <button onclick="openAddStudentModal()" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg transition flex items-center">
+                        <i class="fas fa-plus ml-2"></i>إضافة طالب جديد
+                    </button>
+                </div>
+
+                <!-- Search and Filter -->
+                <div class="bg-white rounded-xl shadow-md p-4 mb-6">
+                    <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                        <div class="relative">
+                            <input type="text" placeholder="البحث بالاسم أو الرقم الجامعي..." class="w-full pr-10 pl-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            <i class="fas fa-search absolute right-3 top-3 text-gray-400"></i>
+                        </div>
+                        <select class="px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            <option>جميع المباني</option>
+                            <option>مبنى أ</option>
+                            <option>مبنى ب</option>
+                        </select>
+                        <select class="px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            <option>جميع الحالات</option>
+                            <option>نشط</option>
+                            <option>منتهي</option>
+                        </select>
+                        <button class="bg-gray-100 hover:bg-gray-200 px-4 py-2 rounded-lg transition">
+                            <i class="fas fa-filter ml-2"></i>فلترة متقدمة
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Students Table -->
+                <div class="bg-white rounded-xl shadow-md overflow-hidden">
+                    <div class="overflow-x-auto">
+                        <table class="w-full">
+                            <thead class="bg-gray-50">
+                                <tr>
+                                    <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">الطالب</th>
+                                    <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">الرقم الجامعي</th>
+                                    <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">الجامعة</th>
+                                    <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">الغرفة</th>
+                                    <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">الحالة</th>
+                                    <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">الإجراءات</th>
+                                </tr>
+                            </thead>
+                            <tbody class="bg-white divide-y divide-gray-200">
+                                <tr class="hover:bg-gray-50 transition">
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <div class="flex items-center">
+                                            <div class="w-10 h-10 bg-blue-500 rounded-full flex items-center justify-center text-white font-bold ml-3">
+                                                محمد
+                                            </div>
+                                            <div>
+                                                <div class="text-sm font-medium text-gray-900">محمد بن علي</div>
+                                                <div class="text-sm text-gray-500">mohamed@email.com</div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">2024001234</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">جامعة صفاقس</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">205 - مبنى أ</td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">نشط</span>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                                        <button onclick="viewStudentDetails('2024001234')" class="text-blue-600 hover:text-blue-900 ml-3"><i class="fas fa-eye"></i></button>
+                                        <button onclick="editStudent('2024001234')" class="text-green-600 hover:text-green-900 ml-3"><i class="fas fa-edit"></i></button>
+                                        <button onclick="deleteStudent('2024001234')" class="text-red-600 hover:text-red-900"><i class="fas fa-trash"></i></button>
+                                    </td>
+                                </tr>
+                                <tr class="hover:bg-gray-50 transition">
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <div class="flex items-center">
+                                            <div class="w-10 h-10 bg-pink-500 rounded-full flex items-center justify-center text-white font-bold ml-3">
+                                                سارة
+                                            </div>
+                                            <div>
+                                                <div class="text-sm font-medium text-gray-900">سارة التريكي</div>
+                                                <div class="text-sm text-gray-500">sara@email.com</div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">2024001235</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">المعهد العالي للإعلامية</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">315 - مبنى ب</td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">نشط</span>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                                        <button class="text-blue-600 hover:text-blue-900 ml-3"><i class="fas fa-eye"></i></button>
+                                        <button class="text-green-600 hover:text-green-900 ml-3"><i class="fas fa-edit"></i></button>
+                                        <button class="text-red-600 hover:text-red-900"><i class="fas fa-trash"></i></button>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="bg-gray-50 px-6 py-3 flex items-center justify-between">
+                        <div class="text-sm text-gray-700">
+                            عرض <span class="font-medium">1</span> إلى <span class="font-medium">10</span> من <span class="font-medium">245</span> نتيجة
+                        </div>
+                        <div class="flex space-x-reverse space-x-2">
+                            <button class="px-3 py-1 border rounded hover:bg-gray-100 transition">السابق</button>
+                            <button class="px-3 py-1 bg-blue-600 text-white rounded">1</button>
+                            <button class="px-3 py-1 border rounded hover:bg-gray-100 transition">2</button>
+                            <button class="px-3 py-1 border rounded hover:bg-gray-100 transition">3</button>
+                            <button class="px-3 py-1 border rounded hover:bg-gray-100 transition">التالي</button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Rooms Section -->
+            <section id="rooms" class="content-section hidden">
+                <div class="flex justify-between items-center mb-6">
+                    <h2 class="text-3xl font-bold text-gray-800">إدارة الغرف</h2>
+                    <div class="flex space-x-reverse space-x-3">
+                        <button onclick="openAddRoomModal()" class="bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-lg transition flex items-center">
+                            <i class="fas fa-plus ml-2"></i>إضافة غرفة
+                        </button>
+                        <button onclick="showBuildingMap()" class="bg-purple-600 hover:bg-purple-700 text-white px-6 py-3 rounded-lg transition flex items-center">
+                            <i class="fas fa-map ml-2"></i>خريطة المباني
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Room Stats -->
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+                    <div class="bg-white rounded-lg shadow p-4">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-sm text-gray-500">إجمالي الغرف</p>
+                                <p class="text-2xl font-bold">320</p>
+                            </div>
+                            <i class="fas fa-door-open text-3xl text-gray-400"></i>
+                        </div>
+                    </div>
+                    <div class="bg-white rounded-lg shadow p-4">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-sm text-gray-500">غرف متاحة</p>
+                                <p class="text-2xl font-bold text-green-600">89</p>
+                            </div>
+                            <i class="fas fa-check-circle text-3xl text-green-400"></i>
+                        </div>
+                    </div>
+                    <div class="bg-white rounded-lg shadow p-4">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-sm text-gray-500">غرف محجوزة</p>
+                                <p class="text-2xl font-bold text-blue-600">156</p>
+                            </div>
+                            <i class="fas fa-bed text-3xl text-blue-400"></i>
+                        </div>
+                    </div>
+                    <div class="bg-white rounded-lg shadow p-4">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-sm text-gray-500">غرف تحت الصيانة</p>
+                                <p class="text-2xl font-bold text-orange-600">12</p>
+                            </div>
+                            <i class="fas fa-tools text-3xl text-orange-400"></i>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Rooms Grid -->
+                <div class="bg-white rounded-xl shadow-md p-6">
+                    <div class="mb-4 flex justify-between items-center">
+                        <h3 class="text-xl font-bold">قائمة الغرف</h3>
+                        <div class="flex space-x-reverse space-x-2">
+                            <select class="px-4 py-2 border rounded-lg">
+                                <option>جميع المباني</option>
+                                <option>مبنى أ</option>
+                                <option>مبنى ب</option>
+                            </select>
+                            <select class="px-4 py-2 border rounded-lg">
+                                <option>جميع الطوابق</option>
+                                <option>الطابق الأول</option>
+                                <option>الطابق الثاني</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                        <!-- Room Card 1 -->
+                        <div class="border rounded-lg p-4 hover:shadow-lg transition cursor-pointer">
+                            <div class="flex justify-between items-start mb-3">
+                                <div>
+                                    <h4 class="font-bold text-lg">غرفة 101</h4>
+                                    <p class="text-sm text-gray-500">مبنى أ • الطابق الأول</p>
+                                </div>
+                                <span class="px-2 py-1 bg-green-100 text-green-800 text-xs rounded-full">متاحة</span>
+                            </div>
+                            <div class="space-y-2 text-sm">
+                                <div class="flex justify-between">
+                                    <span class="text-gray-500">السعة:</span>
+                                    <span class="font-semibold">2 أشخاص</span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span class="text-gray-500">النوع:</span>
+                                    <span class="font-semibold">مزدوجة</span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span class="text-gray-500">السعر:</span>
+                                    <span class="font-semibold text-blue-600">250 د.ت/شهر</span>
+                                </div>
+                            </div>
+                            <div class="mt-3 pt-3 border-t flex justify-between">
+                                <button onclick="viewRoomDetails('101')" class="text-blue-600 hover:text-blue-800 text-sm"><i class="fas fa-info-circle ml-1"></i>تفاصيل</button>
+                                <button onclick="bookRoom('101')" class="text-green-600 hover:text-green-800 text-sm"><i class="fas fa-user-plus ml-1"></i>حجز</button>
+                            </div>
+                        </div>
+
+                        <!-- Room Card 2 -->
+                        <div class="border rounded-lg p-4 hover:shadow-lg transition cursor-pointer">
+                            <div class="flex justify-between items-start mb-3">
+                                <div>
+                                    <h4 class="font-bold text-lg">غرفة 205</h4>
+                                    <p class="text-sm text-gray-500">مبنى أ • الطابق الثاني</p>
+                                </div>
+                                <span class="px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded-full">محجوزة</span>
+                            </div>
+                            <div class="space-y-2 text-sm">
+                                <div class="flex justify-between">
+                                    <span class="text-gray-500">السعة:</span>
+                                    <span class="font-semibold">2 أشخاص</span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span class="text-gray-500">النوع:</span>
+                                    <span class="font-semibold">مزدوجة</span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span class="text-gray-500">الساكن:</span>
+                                    <span class="font-semibold">محمد بن علي</span>
+                                </div>
+                            </div>
+                            <div class="mt-3 pt-3 border-t flex justify-between">
+                                <button onclick="viewRoomDetails('205')" class="text-blue-600 hover:text-blue-800 text-sm"><i class="fas fa-info-circle ml-1"></i>تفاصيل</button>
+                                <button onclick="transferRoom('205')" class="text-orange-600 hover:text-orange-800 text-sm"><i class="fas fa-exchange-alt ml-1"></i>نقل</button>
+                            </div>
+                        </div>
+
+                        <!-- Room Card 3 -->
+                        <div class="border rounded-lg p-4 hover:shadow-lg transition cursor-pointer">
+                            <div class="flex justify-between items-start mb-3">
+                                <div>
+                                    <h4 class="font-bold text-lg">غرفة 315</h4>
+                                    <p class="text-sm text-gray-500">مبنى ب • الطابق الثالث</p>
+                                </div>
+                                <span class="px-2 py-1 bg-orange-100 text-orange-800 text-xs rounded-full">تحت الصيانة</span>
+                            </div>
+                            <div class="space-y-2 text-sm">
+                                <div class="flex justify-between">
+                                    <span class="text-gray-500">السعة:</span>
+                                    <span class="font-semibold">3 أشخاص</span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span class="text-gray-500">النوع:</span>
+                                    <span class="font-semibold">ثلاثية</span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span class="text-gray-500">تاريخ الانتهاء:</span>
+                                    <span class="font-semibold">15/12/2024</span>
+                                </div>
+                            </div>
+                            <div class="mt-3 pt-3 border-t flex justify-between">
+                                <button onclick="viewRoomDetails('315')" class="text-blue-600 hover:text-blue-800 text-sm"><i class="fas fa-info-circle ml-1"></i>تفاصيل</button>
+                                <button onclick="maintainRoom('315')" class="text-purple-600 hover:text-purple-800 text-sm"><i class="fas fa-wrench ml-1"></i>صيانة</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Reservations Section -->
+            <section id="reservations" class="content-section hidden">
+                <div class="flex justify-between items-center mb-6">
+                    <h2 class="text-3xl font-bold text-gray-800">إدارة الحجوزات</h2>
+                    <button onclick="openAddReservationModal()" class="bg-orange-600 hover:bg-orange-700 text-white px-6 py-3 rounded-lg transition flex items-center">
+                        <i class="fas fa-calendar-plus ml-2"></i>حجز جديد
+                    </button>
+                </div>
+
+                <!-- Calendar View -->
+                <div class="bg-white rounded-xl shadow-md p-6 mb-6">
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 class="text-xl font-bold">تقويم الحجوزات</h3>
+                        <div class="flex space-x-reverse space-x-2">
+                            <button class="px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-lg transition">
+                                <i class="fas fa-chevron-right"></i>
+                            </button>
+                            <span class="px-4 py-2 font-semibold">ديسمبر 2024</span>
+                            <button class="px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-lg transition">
+                                <i class="fas fa-chevron-left"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-7 gap-2">
+                        <div class="text-center font-semibold text-gray-600 py-2">الأحد</div>
+                        <div class="text-center font-semibold text-gray-600 py-2">الإثنين</div>
+                        <div class="text-center font-semibold text-gray-600 py-2">الثلاثاء</div>
+                        <div class="text-center font-semibold text-gray-600 py-2">الأربعاء</div>
+                        <div class="text-center font-semibold text-gray-600 py-2">الخميس</div>
+                        <div class="text-center font-semibold text-gray-600 py-2">الجمعة</div>
+                        <div class="text-center font-semibold text-gray-600 py-2">السبت</div>
+                        
+                        <!-- Calendar Days -->
+                        <div class="border rounded-lg p-2 min-h-[80px] hover:bg-gray-50">
+                            <div class="font-semibold">1</div>
+                            <div class="text-xs text-blue-600 mt-1">3 حجوزات</div>
+                        </div>
+                        <div class="border rounded-lg p-2 min-h-[80px] hover:bg-gray-50">
+                            <div class="font-semibold">2</div>
+                        </div>
+                        <div class="border rounded-lg p-2 min-h-[80px] bg-blue-50 hover:bg-blue-100">
+                            <div class="font-semibold text-blue-600">3</div>
+                            <div class="text-xs text-blue-600 mt-1">5 حجوزات</div>
+                        </div>
+                        <div class="border rounded-lg p-2 min-h-[80px] hover:bg-gray-50">
+                            <div class="font-semibold">4</div>
+                        </div>
+                        <div class="border rounded-lg p-2 min-h-[80px] hover:bg-gray-50">
+                            <div class="font-semibold">5</div>
+                            <div class="text-xs text-green-600 mt-1">2 حجوزات</div>
+                        </div>
+                        <div class="border rounded-lg p-2 min-h-[80px] hover:bg-gray-50">
+                            <div class="font-semibold">6</div>
+                        </div>
+                        <div class="border rounded-lg p-2 min-h-[80px] hover:bg-gray-50">
+                            <div class="font-semibold">7</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Reservations List -->
+                <div class="bg-white rounded-xl shadow-md overflow-hidden">
+                    <div class="p-4 border-b">
+                        <div class="flex space-x-reverse space-x-2">
+                            <button class="px-4 py-2 bg-blue-600 text-white rounded-lg">الكل</button>
+                            <button class="px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-lg transition">معلقة</button>
+                            <button class="px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-lg transition">مؤكدة</button>
+                            <button class="px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-lg transition">منتهية</button>
+                        </div>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="w-full">
+                            <thead class="bg-gray-50">
+                                <tr>
+                                    <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">رقم الحجز</th>
+                                    <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">الطالب</th>
+                                    <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">الغرفة</th>
+                                    <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">تاريخ البدء</th>
+                                    <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">تاريخ الانتهاء</th>
+                                    <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">الحالة</th>
+                                    <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">الإجراءات</th>
+                                </tr>
+                            </thead>
+                            <tbody class="bg-white divide-y divide-gray-200">
+                                <tr class="hover:bg-gray-50">
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">#R001</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm">محمد بن علي</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm">205 - مبنى أ</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm">01/09/2024</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm">30/06/2025</td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <span class="px-2 py-1 text-xs rounded-full bg-green-100 text-green-800">مؤكدة</span>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm">
+                                        <button onclick="viewReservationDetails('R001')" class="text-blue-600 hover:text-blue-900 ml-2"><i class="fas fa-eye"></i></button>
+                                        <button onclick="confirmReservation('R001')" class="text-green-600 hover:text-green-900 ml-2"><i class="fas fa-check"></i></button>
+                                        <button onclick="cancelReservation('R001')" class="text-red-600 hover:text-red-900"><i class="fas fa-times"></i></button>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Payments Section -->
+            <section id="payments" class="content-section hidden">
+                <div class="flex justify-between items-center mb-6">
+                    <h2 class="text-3xl font-bold text-gray-800">إدارة المدفوعات</h2>
+                    <button onclick="openAddPaymentModal()" class="bg-teal-600 hover:bg-teal-700 text-white px-6 py-3 rounded-lg transition flex items-center">
+                        <i class="fas fa-receipt ml-2"></i>تسجيل دفعة
+                    </button>
+                </div>
+
+                <!-- Payment Summary -->
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+                    <div class="bg-gradient-to-r from-green-500 to-green-600 text-white rounded-xl p-6">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-green-100">الإيرادات الشهرية</p>
+                                <p class="text-3xl font-bold mt-2">458,320 د.ت</p>
+                                <p class="text-sm mt-2 text-green-100">
+                                    <i class="fas fa-arrow-up"></i> +12% من الشهر الماضي
+                                </p>
+                            </div>
+                            <i class="fas fa-chart-line text-4xl text-green-200"></i>
+                        </div>
+                    </div>
+                    <div class="bg-gradient-to-r from-orange-500 to-orange-600 text-white rounded-xl p-6">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-orange-100">المبالغ المستحقة</p>
+                                <p class="text-3xl font-bold mt-2">125,450 د.ت</p>
+                                <p class="text-sm mt-2 text-orange-100">45 طالب</p>
+                            </div>
+                            <i class="fas fa-clock text-4xl text-orange-200"></i>
+                        </div>
+                    </div>
+                    <div class="bg-gradient-to-r from-purple-500 to-purple-600 text-white rounded-xl p-6">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-purple-100">متوسط الدفعة</p>
+                                <p class="text-3xl font-bold mt-2">285 د.ت</p>
+                                <p class="text-sm mt-2 text-purple-100">لكل طالب</p>
+                            </div>
+                            <i class="fas fa-calculator text-4xl text-purple-200"></i>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Recent Payments -->
+                <div class="bg-white rounded-xl shadow-md overflow-hidden">
+                    <div class="p-4 border-b flex justify-between items-center">
+                        <h3 class="text-xl font-bold">المدفوعات الأخيرة</h3>
+                        <div class="flex space-x-reverse space-x-2">
+                            <input type="date" class="px-4 py-2 border rounded-lg">
+                            <button class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition">
+                                <i class="fas fa-download ml-2"></i>تصدير
+                            </button>
+                        </div>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="w-full">
+                            <thead class="bg-gray-50">
+                                <tr>
+                                    <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">الرقم</th>
+                                    <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">الطالب</th>
+                                    <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">النوع</th>
+                                    <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">المبلغ</th>
+                                    <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">التاريخ</th>
+                                    <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">الحالة</th>
+                                    <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">الإجراءات</th>
+                                </tr>
+                            </thead>
+                            <tbody class="bg-white divide-y divide-gray-200">
+                                <tr class="hover:bg-gray-50">
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm">#P001</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm">محمد بن علي</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm">إيجار ديسمبر</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm font-semibold">250 د.ت</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm">01/12/2024</td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <span class="px-2 py-1 text-xs rounded-full bg-green-100 text-green-800">مدفوعة</span>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm">
+                                        <button onclick="printPayment('P001')" class="text-blue-600 hover:text-blue-900"><i class="fas fa-print"></i></button>
+                                    </td>
+                                </tr>
+                                <tr class="hover:bg-gray-50">
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm">#P002</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm">سارة التريكي</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm">إيجار ديسمبر</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm font-semibold">250 د.ت</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm">02/12/2024</td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <span class="px-2 py-1 text-xs rounded-full bg-green-100 text-green-800">مدفوعة</span>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm">
+                                        <button onclick="printPayment('P002')" class="text-blue-600 hover:text-blue-900"><i class="fas fa-print"></i></button>
+                                    </td>
+                                </tr>
+                                <tr class="hover:bg-gray-50">
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm">#P003</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm">أحمد صالح</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm">إيجار ديسمبر</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm font-semibold">250 د.ت</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm">-</td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <span class="px-2 py-1 text-xs rounded-full bg-red-100 text-red-800">غير مدفوعة</span>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm">
+                                        <button class="text-green-600 hover:text-green-900 ml-2"><i class="fas fa-check"></i></button>
+                                        <button class="text-blue-600 hover:text-blue-900"><i class="fas fa-bell"></i></button>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Reports Section -->
+            <section id="reports" class="content-section hidden">
+                <h2 class="text-3xl font-bold mb-6 text-gray-800">التقارير والإحصائيات</h2>
+
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+                    <!-- Occupancy Chart -->
+                    <div class="bg-white rounded-xl shadow-md p-6">
+                        <h3 class="text-xl font-bold mb-4">معدل الإشغال الشهري</h3>
+                        <div class="h-64 flex items-center justify-center bg-gray-50 rounded-lg">
+                            <canvas id="occupancyChart"></canvas>
+                        </div>
+                    </div>
+
+                    <!-- Revenue Chart -->
+                    <div class="bg-white rounded-xl shadow-md p-6">
+                        <h3 class="text-xl font-bold mb-4">الإيرادات الشهرية</h3>
+                        <div class="h-64 flex items-center justify-center bg-gray-50 rounded-lg">
+                            <canvas id="revenueChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Report Types -->
+                <div class="bg-white rounded-xl shadow-md p-6">
+                    <h3 class="text-xl font-bold mb-4">تقارير متاحة</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                        <div class="border rounded-lg p-4 hover:shadow-md transition cursor-pointer">
+                            <div class="flex items-center mb-3">
+                                <i class="fas fa-file-pdf text-red-600 text-2xl ml-3"></i>
+                                <h4 class="font-semibold">تقرير الطلاب</h4>
+                            </div>
+                            <p class="text-sm text-gray-600 mb-3">قائمة كاملة بجميع الطلاب المسجلين</p>
+                            <button class="text-blue-600 hover:text-blue-800 text-sm font-semibold">
+                                <i class="fas fa-download ml-1"></i>تحميل التقرير
+                            </button>
+                        </div>
+                        <div class="border rounded-lg p-4 hover:shadow-md transition cursor-pointer">
+                            <div class="flex items-center mb-3">
+                                <i class="fas fa-file-excel text-green-600 text-2xl ml-3"></i>
+                                <h4 class="font-semibold">تقرير المدفوعات</h4>
+                            </div>
+                            <p class="text-sm text-gray-600 mb-3">تفاصيل جميع المدفوعات والمستحقات</p>
+                            <button class="text-blue-600 hover:text-blue-800 text-sm font-semibold">
+                                <i class="fas fa-download ml-1"></i>تحميل التقرير
+                            </button>
+                        </div>
+                        <div class="border rounded-lg p-4 hover:shadow-md transition cursor-pointer">
+                            <div class="flex items-center mb-3">
+                                <i class="fas fa-file-alt text-blue-600 text-2xl ml-3"></i>
+                                <h4 class="font-semibold">تقرير الغرف</h4>
+                            </div>
+                            <p class="text-sm text-gray-600 mb-3">حالة جميع الغرف والمباني</p>
+                            <button class="text-blue-600 hover:text-blue-800 text-sm font-semibold">
+                                <i class="fas fa-download ml-1"></i>تحميل التقرير
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Settings Section -->
+            <section id="settings" class="content-section hidden">
+                <h2 class="text-3xl font-bold mb-6 text-gray-800">الإعدادات</h2>
+
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    <!-- General Settings -->
+                    <div class="lg:col-span-2">
+                        <div class="bg-white rounded-xl shadow-md p-6">
+                            <h3 class="text-xl font-bold mb-4">الإعدادات العامة</h3>
+                            <div class="space-y-4">
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">اسم المبيتات</label>
+                                    <input type="text" value="مبيتات جامعة صفاقس" class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">العنوان</label>
+                                    <input type="text" value="شارع الحبيب بورقيبة، صفاقس 3000، تونس" class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">رقم الهاتف</label>
+                                    <input type="tel" value="+216 74 123 456" class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">البريد الإلكتروني</label>
+                                    <input type="email" value="info@sfax-dormitory.tn" class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                </div>
+                                <button class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg transition">
+                                    حفظ التغييرات
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Pricing Settings -->
+                        <div class="bg-white rounded-xl shadow-md p-6 mt-6">
+                            <h3 class="text-xl font-bold mb-4">أسعار الإيجار</h3>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">غرفة مفردة</label>
+                                    <input type="number" value="350" class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">غرفة مزدوجة</label>
+                                    <input type="number" value="250" class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">غرفة ثلاثية</label>
+                                    <input type="number" value="200" class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">ضمان الإيجار</label>
+                                    <input type="number" value="500" class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                </div>
+                            </div>
+                            <button class="bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded-lg transition mt-4">
+                                تحديث الأسعار
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Quick Actions -->
+                    <div>
+                        <div class="bg-white rounded-xl shadow-md p-6">
+                            <h3 class="text-xl font-bold mb-4">إجراءات سريعة</h3>
+                            <div class="space-y-3">
+                                <button class="w-full text-right px-4 py-3 bg-gray-50 hover:bg-gray-100 rounded-lg transition">
+                                    <i class="fas fa-database ml-3 text-blue-600"></i>
+                                    نسخ احتياطي للبيانات
+                                </button>
+                                <button class="w-full text-right px-4 py-3 bg-gray-50 hover:bg-gray-100 rounded-lg transition">
+                                    <i class="fas fa-file-import ml-3 text-green-600"></i>
+                                    استيراد بيانات
+                                </button>
+                                <button class="w-full text-right px-4 py-3 bg-gray-50 hover:bg-gray-100 rounded-lg transition">
+                                    <i class="fas fa-bell ml-3 text-orange-600"></i>
+                                    إعدادات التنبيهات
+                                </button>
+                                <button class="w-full text-right px-4 py-3 bg-gray-50 hover:bg-gray-100 rounded-lg transition">
+                                    <i class="fas fa-users-cog ml-3 text-purple-600"></i>
+                                    إدارة المستخدمين
+                                </button>
+                                <button class="w-full text-right px-4 py-3 bg-gray-50 hover:bg-gray-100 rounded-lg transition">
+                                    <i class="fas fa-shield-alt ml-3 text-red-600"></i>
+                                    أمان الخصوصية
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- Modals -->
+    <div id="modal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-50">
+        <div class="bg-white rounded-xl p-6 w-full max-w-md slide-in">
+            <div class="flex justify-between items-center mb-4">
+                <h3 id="modalTitle" class="text-xl font-bold"></h3>
+                <button onclick="closeModal()" class="text-gray-500 hover:text-gray-700">
+                    <i class="fas fa-times text-xl"></i>
+                </button>
+            </div>
+            <div id="modalContent"></div>
+        </div>
+    </div>
+
+    <!-- Toast Notification -->
+    <div id="toast" class="fixed bottom-4 left-4 bg-green-600 text-white px-6 py-3 rounded-lg shadow-lg hidden z-50 slide-in">
+        <div class="flex items-center">
+            <i class="fas fa-check-circle ml-2"></i>
+            <span id="toastMessage">تمت العملية بنجاح</span>
+        </div>
+    </div>
+
+    <script>
+        // Navigation
+        function showSection(sectionId) {
+            // Hide all sections
+            document.querySelectorAll('.content-section').forEach(section => {
+                section.classList.add('hidden');
+            });
+            
+            // Show selected section
+            const selectedSection = document.getElementById(sectionId);
+            selectedSection.classList.remove('hidden');
+            selectedSection.classList.add('fade-in');
+            
+            // Update nav items
+            document.querySelectorAll('.nav-item').forEach(item => {
+                item.classList.remove('bg-blue-50', 'border-r-4', 'border-blue-600', 'active');
+            });
+            
+            const activeItem = event.target.closest('.nav-item');
+            if (activeItem) {
+                activeItem.classList.add('bg-blue-50', 'border-r-4', 'border-blue-600', 'active');
+            }
+            
+            // Initialize charts if reports section
+            if (sectionId === 'reports') {
+                setTimeout(() => initializeCharts(), 100);
+            }
+        }
+
+        // Modal Functions
+        function openAddStudentModal() {
+            document.getElementById('modalTitle').textContent = 'إضافة طالب جديد';
+            document.getElementById('modalContent').innerHTML = `
+                <form class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">الاسم الكامل</label>
+                        <input type="text" class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" required>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">الرقم الجامعي</label>
+                        <input type="text" class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" required>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">البريد الإلكتروني</label>
+                        <input type="email" class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" required>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">رقم الهاتف</label>
+                        <input type="tel" class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" required>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">الجامعة</label>
+                        <select class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" required>
+                            <option>جامعة صفاقس</option>
+                            <option>المعهد العالي للإعلامية</option>
+                            <option>المعهد العالي للدراسات التطبيقية</option>
+                        </select>
+                    </div>
+                    <div class="flex space-x-reverse space-x-3">
+                        <button type="button" onclick="saveStudent()" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white py-2 rounded-lg transition">
+                            حفظ
+                        </button>
+                        <button type="button" onclick="closeModal()" class="flex-1 bg-gray-200 hover:bg-gray-300 py-2 rounded-lg transition">
+                            إلغاء
+                        </button>
+                    </div>
+                </form>
+            `;
+            document.getElementById('modal').classList.remove('hidden');
+        }
+
+        function openAddRoomModal() {
+            document.getElementById('modalTitle').textContent = 'إضافة غرفة جديدة';
+            document.getElementById('modalContent').innerHTML = `
+                <form class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">رقم الغرفة</label>
+                        <input type="text" class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" required>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">المبنى</label>
+                        <select class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" required>
+                            <option>مبنى أ</option>
+                            <option>مبنى ب</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">الطابق</label>
+                        <input type="number" min="1" class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" required>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">السعة</label>
+                        <select class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" required>
+                            <option>1 شخص</option>
+                            <option>2 أشخاص</option>
+                            <option>3 أشخاص</option>
+                            <option>4 أشخاص</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">السعر الشهري (د.ت)</label>
+                        <input type="number" class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" required>
+                    </div>
+                    <div class="flex space-x-reverse space-x-3">
+                        <button type="button" onclick="saveRoom()" class="flex-1 bg-green-600 hover:bg-green-700 text-white py-2 rounded-lg transition">
+                            حفظ
+                        </button>
+                        <button type="button" onclick="closeModal()" class="flex-1 bg-gray-200 hover:bg-gray-300 py-2 rounded-lg transition">
+                            إلغاء
+                        </button>
+                    </div>
+                </form>
+            `;
+            document.getElementById('modal').classList.remove('hidden');
+        }
+
+        function openAddReservationModal() {
+            document.getElementById('modalTitle').textContent = 'حجز جديد';
+            document.getElementById('modalContent').innerHTML = `
+                <form class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">الطالب</label>
+                        <select class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" required>
+                            <option>اختر الطالب</option>
+                            <option>محمد بن علي</option>
+                            <option>سارة التريكي</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">الغرفة</label>
+                        <select class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" required>
+                            <option>اختر الغرفة</option>
+                            <option>101 - مبنى أ</option>
+                            <option>205 - مبنى أ</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">تاريخ البدء</label>
+                        <input type="date" class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" required>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">تاريخ الانتهاء</label>
+                        <input type="date" class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" required>
+                    </div>
+                    <div class="flex space-x-reverse space-x-3">
+                        <button type="button" onclick="saveReservation()" class="flex-1 bg-orange-600 hover:bg-orange-700 text-white py-2 rounded-lg transition">
+                            حفظ الحجز
+                        </button>
+                        <button type="button" onclick="closeModal()" class="flex-1 bg-gray-200 hover:bg-gray-300 py-2 rounded-lg transition">
+                            إلغاء
+                        </button>
+                    </div>
+                </form>
+            `;
+            document.getElementById('modal').classList.remove('hidden');
+        }
+
+        function openAddPaymentModal() {
+            document.getElementById('modalTitle').textContent = 'تسجيل دفعة جديدة';
+            document.getElementById('modalContent').innerHTML = `
+                <form class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">الطالب</label>
+                        <select class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" required>
+                            <option>اختر الطالب</option>
+                            <option>محمد بن علي</option>
+                            <option>سارة التريكي</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">نوع الدفعة</label>
+                        <select class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" required>
+                            <option>إيجار شهري</option>
+                            <option>ضمان الإيجار</option>
+                            <option>رسوم تسجيل</option>
+                            <option>أخرى</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">المبلغ (د.ت)</label>
+                        <input type="number" step="0.01" class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" required>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">طريقة الدفع</label>
+                        <select class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" required>
+                            <option>نقدي</option>
+                            <option>بطاقة بنكية</option>
+                            <option>تحويل بنكي</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">التاريخ</label>
+                        <input type="date" class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" required>
+                    </div>
+                    <div class="flex space-x-reverse space-x-3">
+                        <button type="button" onclick="savePayment()" class="flex-1 bg-teal-600 hover:bg-teal-700 text-white py-2 rounded-lg transition">
+                            تسجيل الدفعة
+                        </button>
+                        <button type="button" onclick="closeModal()" class="flex-1 bg-gray-200 hover:bg-gray-300 py-2 rounded-lg transition">
+                            إلغاء
+                        </button>
+                    </div>
+                </form>
+            `;
+            document.getElementById('modal').classList.remove('hidden');
+        }
+
+        function closeModal() {
+            document.getElementById('modal').classList.add('hidden');
+        }
+
+        // Save Functions
+        function saveStudent() {
+            closeModal();
+            showToast('تم إضافة الطالب بنجاح');
+        }
+
+        function saveRoom() {
+            closeModal();
+            showToast('تم إضافة الغرفة بنجاح');
+        }
+
+        function saveReservation() {
+            closeModal();
+            showToast('تم تسجيل الحجز بنجاح');
+        }
+
+        function savePayment() {
+            closeModal();
+            showToast('تم تسجيل الدفعة بنجاح');
+        }
+
+        // Toast Notification
+        function showToast(message) {
+            document.getElementById('toastMessage').textContent = message;
+            document.getElementById('toast').classList.remove('hidden');
+            setTimeout(() => {
+                document.getElementById('toast').classList.add('hidden');
+            }, 3000);
+        }
+
+        // Logout
+        function logout() {
+            if (confirm('هل أنت متأكد من تسجيل الخروج؟')) {
+                showToast('تم تسجيل الخروج بنجاح');
+                setTimeout(() => {
+                    location.reload();
+                }, 1500);
+            }
+        }
+
+        // Initialize Charts
+        function initializeCharts() {
+            // Occupancy Chart
+            const occupancyCtx = document.getElementById('occupancyChart');
+            if (occupancyCtx) {
+                new Chart(occupancyCtx, {
+                    type: 'line',
+                    data: {
+                        labels: ['يناير', 'فبراير', 'مارس', 'أبريل', 'مايو', 'يونيو'],
+                        datasets: [{
+                            label: 'معدل الإشغال %',
+                            data: [65, 68, 72, 70, 75, 72],
+                            borderColor: '#3B82F6',
+                            backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                            tension: 0.4
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                display: false
+                            }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                max: 100
+                            }
+                        }
+                    }
+                });
+            }
+
+            // Revenue Chart
+            const revenueCtx = document.getElementById('revenueChart');
+            if (revenueCtx) {
+                new Chart(revenueCtx, {
+                    type: 'bar',
+                    data: {
+                        labels: ['يناير', 'فبراير', 'مارس', 'أبريل', 'مايو', 'يونيو'],
+                        datasets: [{
+                            label: 'الإيرادات (د.ت)',
+                            data: [420000, 435000, 450000, 445000, 465000, 458320],
+                            backgroundColor: '#10B981'
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                display: false
+                            }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: true
+                            }
+                        }
+                    }
+                });
+            }
+        }
+
+        // Additional Functions
+        function viewStudentDetails(studentId) {
+            showToast('عرض تفاصيل الطالب: ' + studentId);
+        }
+
+        function editStudent(studentId) {
+            showToast('تعديل بيانات الطالب: ' + studentId);
+        }
+
+        function deleteStudent(studentId) {
+            if (confirm('هل أنت متأكد من حذف هذا الطالب؟')) {
+                showToast('تم حذف الطالب بنجاح');
+            }
+        }
+
+        function viewRoomDetails(roomId) {
+            showToast('عرض تفاصيل الغرفة: ' + roomId);
+        }
+
+        function bookRoom(roomId) {
+            showToast('فتح نافذة حجز الغرفة: ' + roomId);
+        }
+
+        function transferRoom(roomId) {
+            showToast('فتح نافذة نقل الغرفة: ' + roomId);
+        }
+
+        function maintainRoom(roomId) {
+            showToast('فتح نافذة صيانة الغرفة: ' + roomId);
+        }
+
+        function viewReservationDetails(reservationId) {
+            showToast('عرض تفاصيل الحجز: ' + reservationId);
+        }
+
+        function confirmReservation(reservationId) {
+            showToast('تم تأكيد الحجز: ' + reservationId);
+        }
+
+        function cancelReservation(reservationId) {
+            if (confirm('هل أنت متأكد من إلغاء هذا الحجز؟')) {
+                showToast('تم إلغاء الحجز بنجاح');
+            }
+        }
+
+        function printPayment(paymentId) {
+            showToast('طباعة إيصال الدفعة: ' + paymentId);
+        }
+
+        function markAsPaid(paymentId) {
+            showToast('تم تحديث حالة الدفعة: ' + paymentId);
+        }
+
+        function sendReminder(paymentId) {
+            showToast('تم إرسال تذكير للطالب');
+        }
+
+        function downloadReport(reportType) {
+            showToast('جاري تحميل التقرير: ' + reportType);
+        }
+
+        function backupData() {
+            showToast('جاري نسخ البيانات احتياطياً...');
+            setTimeout(() => {
+                showToast('تم نسخ البيانات بنجاح');
+            }, 2000);
+        }
+
+        function importData() {
+            showToast('فتح نافذة استيراد البيانات');
+        }
+
+        function notificationSettings() {
+            showToast('فتح إعدادات التنبيهات');
+        }
+
+        function userManagement() {
+            showToast('فتح إدارة المستخدمين');
+        }
+
+        function privacySettings() {
+            showToast('فتح إعدادات الخصوصية والأمان');
+        }
+
+        function saveGeneralSettings() {
+            showToast('تم حفظ الإعدادات العامة بنجاح');
+        }
+
+        function updatePrices() {
+            showToast('تم تحديث الأسعار بنجاح');
+        }
+
+        function showBuildingMap() {
+            showToast('عرض خريطة المباني');
+        }
+
+        function advancedFilter() {
+            showToast('فتح فلترة متقدمة');
+        }
+
+        function exportData() {
+            showToast('جاري تصدير البيانات...');
+            setTimeout(() => {
+                showToast('تم تصدير البيانات بنجاح');
+            }, 1500);
+        }
+
+        // Search functionality
+        function performSearch() {
+            const searchInput = document.querySelector('input[placeholder="البحث بالاسم أو الرقم الجامعي..."]');
+            if (searchInput && searchInput.value) {
+                showToast('البحث عن: ' + searchInput.value);
+            }
+        }
+
+        // Initialize on load
+        window.addEventListener('load', () => {
+            // Initialize dashboard charts
+            initializeCharts();
+            
+            // Add search listeners
+            const searchInputs = document.querySelectorAll('input[type="text"], input[type="email"], input[type="tel"]');
+            searchInputs.forEach(input => {
+                if (input.placeholder && input.placeholder.includes('البحث')) {
+                    input.addEventListener('keyup', (e) => {
+                        if (e.key === 'Enter') {
+                            performSearch();
+                        }
+                    });
+                }
+            });
+
+            // Add filter listeners
+            const selects = document.querySelectorAll('select');
+            selects.forEach(select => {
+                select.addEventListener('change', () => {
+                    showToast('تم تطبيق الفلتر: ' + select.options[select.selectedIndex].text);
+                });
+            });
+
+            // Pagination
+            const paginationButtons = document.querySelectorAll('button[class*="px-3"]');
+            paginationButtons.forEach(button => {
+                if (button.textContent && (button.textContent.includes('السابق') || button.textContent.includes('التالي') || /^\d+$/.test(button.textContent))) {
+                    button.addEventListener('click', () => {
+                        showToast('الانتقال إلى الصفحة: ' + button.textContent);
+                    });
+                }
+            });
+
+            // Calendar navigation
+            const calendarButtons = document.querySelectorAll('.fa-chevron-right, .fa-chevron-left');
+            calendarButtons.forEach(button => {
+                button.parentElement.addEventListener('click', () => {
+                    showToast('تغيير الشهر في التقويم');
+                });
+            });
+        });
+    </script>
+</body>
+</html>
